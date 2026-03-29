@@ -807,44 +807,6 @@ function clearInputWarning() {
     el.classList.remove("visible");
 }
 
-/*function addProcess() {
-    clearInputWarning();
-    const bt = parseInt(btInput.value, 10);
-    const mem = parseInt(memInput.value, 10);
-    const at = parseInt(atInput.value, 10);
-
-    if (Number.isNaN(bt) || Number.isNaN(mem) || Number.isNaN(at)) {
-        showInputWarning("Enter numbers for burst time, memory, and arrival time.");
-        return;
-    }
-    if (bt < 0 || bt > INPUT_MAX) {
-        showInputWarning("Burst time must be from 0 to " + INPUT_MAX + ".");
-        return;
-    }
-    if (mem < 1 || mem > SYSTEM_MEMORY_CAP) {
-        showInputWarning("Memory must be from 1 to " + SYSTEM_MEMORY_CAP + " (cannot exceed system RAM).");
-        return;
-    }
-    if (at < 0 || at > INPUT_MAX) {
-        showInputWarning("Arrival time must be from 0 to " + INPUT_MAX + ".");
-        return;
-    }
-
-    processes.push({ bt, mem, at });
-    const idx = processes.length;
-
-    const div = document.createElement("div");
-    div.className = "queue-item";
-    div.innerHTML =
-        '<span class="badge">P' + idx + '</span>' +
-        '<span class="meta">burst ' + bt + ' · mem ' + mem + ' · arrival ' + at + '</span>';
-    queueEl.appendChild(div);
-
-    btInput.value = "";
-    memInput.value = "";
-    atInput.value = "";
-}*/
-
 function addProcess() {
     clearInputWarning();
 
@@ -999,7 +961,6 @@ function run() {
                     '<span class="vals">waiting ' + p.wt + " · turnaround " + p.tat + "</span>";
                 metricsDiv.appendChild(m);
             });
-            // 🔥 ADD THIS
             const cpuDiv = document.getElementById("cpuUtil");
             if (data.cpu_util !== undefined) {
                 cpuDiv.innerHTML =
