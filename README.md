@@ -1,6 +1,6 @@
 # 🚀 Adaptive CPU Scheduler
 
-**Live Demo:** [Click here to try the app](https://adaptive-scheduler.onrender.com/)
+**Live Demo:** [Click here to try the app](https://adaptive-scheduler-flame.vercel.app/)
 
 This project started as an assignment, but while working on it, I got genuinely interested in how scheduling works in real systems.
 
