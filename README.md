@@ -1,5 +1,7 @@
 # 🚀 Adaptive CPU Scheduler
 
+**Live Demo:** [Click here to try the app](https://adaptive-scheduler.onrender.com/)
+
 This project started as an assignment, but while working on it, I got genuinely interested in how scheduling works in real systems.
 
 It is an interactive simulation of an **Adaptive Round Robin CPU Scheduler** that dynamically adjusts the **time quantum based on CPU utilization**.
