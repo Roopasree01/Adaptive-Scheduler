@@ -896,7 +896,7 @@ function run() {
     document.getElementById("ganttTrack").innerHTML = "";
     setGanttStatus("Running simulation on the server…", "loading");
 
-    fetch("/run", {
+    fetch("https://adaptive-scheduler.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
