@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Scheduler ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+    --cream: #fff8f3;
+    --blush: #ffe4ec;
+    --lavender: #e8e0ff;
+    --mint: #d4f4e8;
+    --peach: #ffe5d4;
+    --text: #4a3f55;
+    --text-soft: #8b7f99;
+    --white: #ffffff;
+    --shadow: rgba(122, 99, 145, 0.12);
+    --shadow-hover: rgba(122, 99, 145, 0.2);
+    --accent: #c77dff;
+    --accent-2: #ff8fab;
+    --radius: 20px;
+    --radius-sm: 14px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    padding: 28px 18px 48px;
+    color: var(--text);
+    overflow-x: hidden;
+    background: var(--cream);
+    background-image:
+        radial-gradient(ellipse 120% 80% at 10% -10%, var(--blush) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 70% at 95% 10%, var(--lavender) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 50% 100%, var(--mint) 0%, transparent 45%),
+        radial-gradient(circle at 20% 60%, rgba(255, 200, 221, 0.35) 0%, transparent 35%),
+        radial-gradient(circle at 85% 50%, rgba(200, 220, 255, 0.4) 0%, transparent 30%);
+    background-attachment: fixed;
+}
+
+.decor {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.star {
+    position: absolute;
+    font-size: 14px;
+    opacity: 0.35;
+    animation: twinkle 4s ease-in-out infinite;
+    color: var(--accent);
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(1.1); }
+}
+
+.wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+header h1 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 1.65rem;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    background: linear-gradient(120deg, #9b6fd8, #e890a8, #7ec8b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tagline {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin: 0;
+}
+
+.panel {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius);
+    padding: 20px 20px 22px;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px var(--shadow), 0 2px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+.panel h3 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin: 0 0 14px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel h3 span {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.field {
+    margin-bottom: 12px;
+}
+
+.field:last-of-type {
+    margin-bottom: 12px;
+}
+
+.mem-hint {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    margin: 0 0 14px;
+    line-height: 1.45;
+}
+
+.mem-hint strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.bounds-box {
+    font-size: 0.78rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(199, 125, 255, 0.22);
+}
+
+.bounds-box strong {
+    display: block;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.bounds-box ul {
+    margin: 0;
+    padding-left: 1.1em;
+}
+
+.input-warning {
+    display: none;
+    font-size: 0.82rem;
+    color: #b44;
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 220, 228, 0.7);
+}
+
+.input-warning.visible {
+    display: block;
+}
+
+label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-soft);
+    margin-bottom: 6px;
+}
+
+input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 2px solid transparent;
+    background: var(--white);
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    box-shadow: 0 2px 12px var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input::placeholder {
+    color: #c4b8cc;
+}
+
+input:focus {
+    outline: none;
+    border-color: rgba(199, 125, 255, 0.45);
+    box-shadow: 0 0 0 3px rgba(199, 125, 255, 0.15), 0 4px 16px var(--shadow);
+}
+
+.btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+button.primary {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: var(--white);
+    background: linear-gradient(135deg, #b388f5 0%, #e879a6 50%, #6ec9b3 100%);
+    background-size: 200% 200%;
+    box-shadow: 0 6px 20px rgba(179, 136, 245, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(179, 136, 245, 0.42);
+}
+
+button.primary:active {
+    transform: translateY(0);
+}
+
+button.secondary {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border: 2px solid rgba(199, 125, 255, 0.35);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #8b5cf0;
+    background: rgba(255, 255, 255, 0.9);
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+button.secondary:hover {
+    background: var(--lavender);
+    border-color: rgba(199, 125, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+button.reset-btn {
+    width: 100%;
+    margin-top: 2px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: 2px dashed rgba(139, 127, 153, 0.45);
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text-soft);
+    background: rgba(255, 255, 255, 0.55);
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+
+button.reset-btn:hover {
+    background: rgba(255, 228, 236, 0.65);
+    border-color: rgba(232, 121, 166, 0.45);
+    color: var(--text);
+}
+
+#queue:empty::after {
+    content: "No processes yet — add some above!";
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    text-align: center;
+    padding: 12px 8px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    margin: 8px 0;
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    box-shadow: 0 2px 12px var(--shadow);
+    font-size: 0.88rem;
+    border-left: 4px solid var(--accent);
+    animation: pop-in 0.35s ease;
+}
+
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.queue-item .badge {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--blush), var(--lavender));
+    color: var(--text);
+}
+
+.queue-item .meta {
+    flex: 1;
+    color: var(--text-soft);
+    font-size: 0.82rem;
+}
+
+#metrics:empty::after {
+    content: "Run the simulation to see waiting & turnaround times";
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    text-align: center;
+    padding: 12px 8px;
+}
+
+.metric {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+    padding: 12px 14px;
+    margin: 8px 0;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), var(--mint));
+    box-shadow: 0 2px 12px var(--shadow);
+    font-size: 0.86rem;
+    align-items: center;
+}
+
+.metric strong {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.metric .vals {
+    color: var(--text-soft);
+    grid-column: 1 / -1;
+    font-size: 0.82rem;
+}
+
+#ganttContainer {
+    position: fixed;
+    inset: 0;
+    background: rgba(74, 63, 85, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.35s ease, visibility 0.35s;
+}
+
+#ganttContainer.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#ganttInner {
+    position: relative;
+    width: 100%;
+    max-width: min(560px, 100%);
+    max-height: min(90vh, 880px);
+    background: linear-gradient(165deg, #fffefb 0%, #fff5f8 50%, #f5f9ff 100%);
+    border-radius: 28px;
+    padding: 28px 22px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 24px 60px rgba(90, 70, 110, 0.25);
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+#ganttBubbles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    animation: float linear infinite;
+}
+
+.bubble::after {
+    content: "";
+    position: absolute;
+    top: 18%;
+    left: 22%;
+    width: 28%;
+    height: 28%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.65);
+}
+
+@keyframes float {
+    from { transform: translateY(110%); opacity: 0.6; }
+    to { transform: translateY(-120%); opacity: 0.3; }
+}
+
+#ganttContent {
+    position: relative;
+    z-index: 2;
+}
+
+#ganttContent h2 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0 0 6px;
+    color: var(--text);
+    text-align: center;
+}
+
+#ganttContent .sub {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    margin: 0 0 16px;
+}
+
+.gantt-status {
+    text-align: center;
+    font-size: 0.88rem;
+    min-height: 1.4em;
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--text);
+    border: 1px dashed rgba(199, 125, 255, 0.35);
+}
+
+.gantt-status.is-loading {
+    color: var(--text-soft);
+    animation: pulse-soft 1.2s ease-in-out infinite;
+}
+
+.gantt-status.is-error {
+    border-style: solid;
+    border-color: rgba(232, 121, 166, 0.55);
+    background: rgba(255, 228, 236, 0.85);
+    color: var(--text);
+}
+
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
+.gantt-track {
+    display: flex;
+    width: 100%;
+    height: 32px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 0 0 18px;
+    box-shadow: inset 0 2px 10px rgba(74, 63, 85, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.gantt-track:empty {
+    display: none;
+}
+
+.gantt-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 0.68rem;
+    color: var(--text);
+    border-right: 2px solid rgba(255, 255, 255, 0.65);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.gantt-seg:last-child {
+    border-right: none;
+}
+
+.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 3;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 16px var(--shadow);
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--text-soft);
+    transition: background 0.2s, transform 0.15s, color 0.2s;
+}
+
+.close-btn:hover {
+    background: var(--blush);
+    color: var(--text);
+    transform: scale(1.06);
+}
+
+#gantt {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    align-content: flex-start;
+    gap: 10px;
+    min-height: 88px;
+    padding: 8px 0 20px;
+    width: 100%;
+}
+
+.queue-item {
+    justify-content: space-between;
+}
+
+.delete-btn {
+    margin-left: auto;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: 0.2s;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.block {
+    min-width: 76px;
+    min-height: 76px;
+    border-radius: 18px;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+    background: linear-gradient(145deg, #e8e4f0, #dcd6e8);
+    box-shadow: 0 6px 18px var(--shadow);
+    animation: block-pop 0.35s ease;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.block .time-window {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--text-soft);
+    letter-spacing: 0.02em;
+}
+
+@keyframes block-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.85) rotate(-4deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+.p1 { background: linear-gradient(145deg, #d4dcff, #c4b5fd); }
+.p2 { background: linear-gradient(145deg, #ffd6e8, #ffc9d9); }
+.p3 { background: linear-gradient(145deg, #c8f5e4, #a8e6cf); }
+.p4 { background: linear-gradient(145deg, #ffecd2, #fcb69f); }
+
+@media (min-width: 480px) {
+    .btn-row {
+        flex-direction: row;
+    }
+    .btn-row button {
+        flex: 1;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="decor" id="skyDecor" aria-hidden="true"></div>
+
+<div class="wrap">
+    <header>
+        <h1>Adaptive Scheduler</h1>
+        <p class="tagline">Little processes, cozy timeline ✿</p>
+    </header>
+
+    <div class="panel">
+        <h3><span>✎</span> Add a process</h3>
+        <div class="bounds-box">
+            <strong>Allowed ranges (fixed for this demo)</strong>
+            <ul>
+                <li><strong>System RAM</strong> — 500 units (each process memory must be ≤ this)</li>
+                <li><strong>Burst time</strong> — 0 … 500</li>
+                <li><strong>Memory (per process)</strong> — 1 … 500</li>
+                <li><strong>Arrival time</strong> — 0 … 500</li>
+                <li><strong>Time quantum</strong> — fixed at 3 for the web run</li>
+            </ul>
+        </div>
+        <p id="inputWarning" class="input-warning" role="alert"></p>
+        <div class="field">
+            <label for="bt">Burst time</label>
+            <input id="bt" type="number" min="0" max="500" step="1" placeholder="0–500">
+        </div>
+        <div class="field">
+            <label for="mem">Memory</label>
+            <input id="mem" type="number" min="1" max="500" step="1" placeholder="1–500">
+        </div>
+        <div class="field">
+            <label for="at">Arrival time</label>
+            <input id="at" type="number" min="0" max="500" step="1" placeholder="0–500">
+        </div>
+        <div class="btn-row">
+            <button type="button" class="secondary" onclick="addProcess()">Add to queue</button>
+            <button type="button" class="primary" onclick="run()">Run simulation</button>
+        </div>
+        <button type="button" class="reset-btn" onclick="resetAll()">Reset all</button>
+    </div>
+
+    <div class="panel">
+        <h3><span>◎</span> Ready queue</h3>
+        <div id="queue"></div>
+    </div>
+
+    <div class="panel">
+        <h3><span>◆</span> Metrics</h3>
+        <div id="metrics"></div>
+        <div id="cpuUtil" class="metric"></div>
+    </div>
+</div>
+
+<div id="ganttContainer">
+    <div id="ganttInner">
+        <div id="ganttBubbles"></div>
+        <button type="button" class="close-btn" onclick="closeGantt()" aria-label="Close timeline">×</button>
+        <div id="ganttContent">
+            <h2>Execution timeline</h2>
+            <p class="sub">Each block is one CPU time slice (same process can repeat). Scroll down if the list is long.</p>
+            <div id="ganttStatus" class="gantt-status" role="status" aria-live="polite"></div>
+            <div id="ganttTrack" class="gantt-track" aria-label="Timeline overview"></div>
+            <div id="gantt"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let processes = [];
+let queueEl = document.getElementById("queue");
+
+const BLOCK_BACKGROUNDS = [
+    "linear-gradient(145deg, #d4dcff, #c4b5fd)",
+    "linear-gradient(145deg, #ffd6e8, #ffc9d9)",
+    "linear-gradient(145deg, #c8f5e4, #a8e6cf)",
+    "linear-gradient(145deg, #ffecd2, #fcb69f)",
+    "linear-gradient(145deg, #e0d4ff, #d4c4f7)",
+    "linear-gradient(145deg, #ffe0ef, #ffd0e5)",
+    "linear-gradient(145deg, #d2f0e8, #b8e6d8)",
+    "linear-gradient(145deg, #fff0d8, #ffdcc4)"
+];
+
+function pidIndex(pid) {
+    const n = parseInt(String(pid).replace(/\D/g, ""), 10);
+    return Number.isNaN(n) ? 0 : n - 1;
+}
+
+function setBlockStyle(blockEl, pid) {
+    const bg = BLOCK_BACKGROUNDS[pidIndex(pid) % BLOCK_BACKGROUNDS.length];
+    blockEl.style.background = bg;
+}
+
+function setGanttStatus(message, kind) {
+    const el = document.getElementById("ganttStatus");
+    el.textContent = message;
+    el.classList.remove("is-loading", "is-error");
+    if (kind === "loading") el.classList.add("is-loading");
+    if (kind === "error") el.classList.add("is-error");
+}
+
+function buildGanttTrack(gantt) {
+    const track = document.getElementById("ganttTrack");
+    track.innerHTML = "";
+    if (!gantt || !gantt.length) return;
+    gantt.forEach(function (entry) {
+        const pid = entry[0];
+        const t0 = entry[1];
+        const t1 = entry[2];
+        const dur = Math.max(1, t1 - t0);
+        const seg = document.createElement("div");
+        seg.className = "gantt-seg";
+        seg.style.flex = dur + " " + dur + " 0%";
+        setBlockStyle(seg, pid);
+        seg.textContent = pid;
+        seg.title = pid + " ran from " + t0 + " to " + t1;
+        track.appendChild(seg);
+    });
+}
+
+function placeStars() {
+    const el = document.getElementById("skyDecor");
+    el.innerHTML = "";
+    const n = 18;
+    for (let i = 0; i < n; i++) {
+        const s = document.createElement("span");
+        s.className = "star";
+        s.textContent = ["✦", "✧", "·"][i % 3];
+        s.style.left = (Math.random() * 92 + 4) + "%";
+        s.style.top = (Math.random() * 85 + 5) + "%";
+        s.style.animationDelay = (Math.random() * 3) + "s";
+        el.appendChild(s);
+    }
+}
+placeStars();
+
+function createBubbles(container) {
+    container.innerHTML = "";
+    for (let i = 0; i < 22; i++) {
+        const b = document.createElement("div");
+        b.className = "bubble";
+        const size = Math.random() < 0.5
+            ? Math.random() * 18 + 10
+            : Math.random() * 32 + 22;
+        b.style.width = size + "px";
+        b.style.height = size + "px";
+        b.style.left = Math.random() * 100 + "%";
+        b.style.top = Math.random() * 100 + "%";
+        b.style.animationDuration = (7 + Math.random() * 7) + "s";
+        container.appendChild(b);
+    }
+}
+
+const btInput = document.getElementById("bt");
+const memInput = document.getElementById("mem");
+const atInput = document.getElementById("at");
+
+const SYSTEM_MEMORY_CAP = 500;
+const INPUT_MAX = 500;
+
+function showInputWarning(msg) {
+    const el = document.getElementById("inputWarning");
+    el.textContent = msg;
+    el.classList.add("visible");
+}
+
+function clearInputWarning() {
+    const el = document.getElementById("inputWarning");
+    el.textContent = "";
+    el.classList.remove("visible");
+}
+
+/*function addProcess() {
+    clearInputWarning();
+    const bt = parseInt(btInput.value, 10);
+    const mem = parseInt(memInput.value, 10);
+    const at = parseInt(atInput.value, 10);
+
+    if (Number.isNaN(bt) || Number.isNaN(mem) || Number.isNaN(at)) {
+        showInputWarning("Enter numbers for burst time, memory, and arrival time.");
+        return;
+    }
+    if (bt < 0 || bt > INPUT_MAX) {
+        showInputWarning("Burst time must be from 0 to " + INPUT_MAX + ".");
+        return;
+    }
+    if (mem < 1 || mem > SYSTEM_MEMORY_CAP) {
+        showInputWarning("Memory must be from 1 to " + SYSTEM_MEMORY_CAP + " (cannot exceed system RAM).");
+        return;
+    }
+    if (at < 0 || at > INPUT_MAX) {
+        showInputWarning("Arrival time must be from 0 to " + INPUT_MAX + ".");
+        return;
+    }
+
+    processes.push({ bt, mem, at });
+    const idx = processes.length;
+
+    const div = document.createElement("div");
+    div.className = "queue-item";
+    div.innerHTML =
+        '<span class="badge">P' + idx + '</span>' +
+        '<span class="meta">burst ' + bt + ' · mem ' + mem + ' · arrival ' + at + '</span>';
+    queueEl.appendChild(div);
+
+    btInput.value = "";
+    memInput.value = "";
+    atInput.value = "";
+}*/
+
+function addProcess() {
+    clearInputWarning();
+
+    const bt = parseInt(btInput.value, 10);
+    const mem = parseInt(memInput.value, 10);
+    const at = parseInt(atInput.value, 10);
+
+    if (Number.isNaN(bt) || Number.isNaN(mem) || Number.isNaN(at)) {
+        showInputWarning("Enter numbers for burst time, memory, and arrival time.");
+        return;
+    }
+    if (bt < 0 || bt > INPUT_MAX) {
+        showInputWarning("Burst time must be from 0 to " + INPUT_MAX + ".");
+        return;
+    }
+    if (mem < 1 || mem > SYSTEM_MEMORY_CAP) {
+        showInputWarning("Memory must be from 1 to " + SYSTEM_MEMORY_CAP + " (cannot exceed system RAM).");
+        return;
+    }
+    if (at < 0 || at > INPUT_MAX) {
+        showInputWarning("Arrival time must be from 0 to " + INPUT_MAX + ".");
+        return;
+    }
+
+    processes.push({ bt, mem, at });
+
+    renderQueue();  
+
+    btInput.value = "";
+    memInput.value = "";
+    atInput.value = "";
+}
+
+function renderQueue() {
+    queueEl.innerHTML = "";
+
+    processes.forEach((p, index) => {
+        const div = document.createElement("div");
+        div.className = "queue-item";
+
+        const pid = "P" + (index + 1);
+
+        div.innerHTML = `
+            <span class="badge">${pid}</span>
+            <span class="meta">burst ${p.bt} · mem ${p.mem} · arrival ${p.at}</span>
+
+            <span onclick="deleteProcess(${index})" class="delete-btn">
+                🗑️
+            </span>
+        `;
+
+        queueEl.appendChild(div);
+    });
+}
+
+function deleteProcess(index) {
+    processes.splice(index, 1);   // remove from array
+    renderQueue();                // refresh UI
+}
+
+function run() {
+    if (!processes.length) {
+        document.getElementById("ganttContainer").classList.add("active");
+        createBubbles(document.getElementById("ganttBubbles"));
+        document.getElementById("ganttTrack").innerHTML = "";
+        document.getElementById("gantt").innerHTML = "";
+        setGanttStatus("Add at least one process to the queue first, then run again.", "error");
+        return;
+    }
+
+    const ganttContainer = document.getElementById("ganttContainer");
+    ganttContainer.classList.add("active");
+    createBubbles(document.getElementById("ganttBubbles"));
+
+    document.getElementById("gantt").innerHTML = "";
+    document.getElementById("ganttTrack").innerHTML = "";
+    setGanttStatus("Running simulation on the server…", "loading");
+
+    fetch("/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            processes,
+            memory: 500,
+            tq: 3
+        })
+    })
+        .then(function (res) {
+            if (!res.ok) {
+                return res.text().then(function (t) {
+                    throw new Error(t || "Server error " + res.status);
+                });
+            }
+            return res.json();
+        })
+        .then(function (data) {
+            const rows = data.gantt || [];
+            const halt = data.halt_reason || null;
+            buildGanttTrack(rows);
+
+            if (!rows.length) {
+                setGanttStatus(
+                    halt || "No CPU slices returned — check process/memory settings or server logs.",
+                    "error"
+                );
+                document.getElementById("metrics").innerHTML = "";
+                return;
+            }
+
+            const totalTicks = rows.reduce(function (s, e) {
+                return s + (e[2] - e[1]);
+            }, 0);
+            if (halt) {
+                setGanttStatus(
+                    "Partial schedule below — simulation stopped: " + halt,
+                    "error"
+                );
+            } else {
+                setGanttStatus(
+                    "Done — " + rows.length + " slice(s), " + totalTicks + " tick(s) of CPU work.",
+                    ""
+                );
+            }
+
+            const ganttEl = document.getElementById("gantt");
+            ganttEl.innerHTML = "";
+            const frag = document.createDocumentFragment();
+            rows.forEach(function (entry, idx) {
+                const pid = entry[0];
+                const t0 = entry[1];
+                const t1 = entry[2];
+                const tq = entry[3];
+                const block = document.createElement("div");
+                block.className = "block " + String(pid).toLowerCase();
+                setBlockStyle(block, pid);
+                block.innerHTML =
+                    "<span>" + pid + " · #" + (idx + 1) + "</span>" +
+                    '<span class="time-window">' + t0 + " → " + t1 + "</span>" +
+                    '<span class="time-window">TQ: ' + tq + "</span>";
+                block.title = "Slice " + (idx + 1) + " of " + rows.length + ": " + pid + " from " + t0 + " to " + t1;
+                frag.appendChild(block);
+            });
+            ganttEl.appendChild(frag);
+
+            const metricsDiv = document.getElementById("metrics");
+            metricsDiv.innerHTML = "";
+            (data.results || []).forEach(function (p) {
+                const m = document.createElement("div");
+                m.className = "metric";
+                m.innerHTML =
+                    "<strong>" + p.pid + "</strong>" +
+                    '<span class="vals">waiting ' + p.wt + " · turnaround " + p.tat + "</span>";
+                metricsDiv.appendChild(m);
+            });
+            // 🔥 ADD THIS
+            const cpuDiv = document.getElementById("cpuUtil");
+            if (data.cpu_util !== undefined) {
+                cpuDiv.innerHTML =
+                    "<strong>CPU</strong>" +
+                    '<span class="vals">' + data.cpu_util.toFixed(2) + '% utilization</span>';
+            }
+        })
+        .catch(function (err) {
+            buildGanttTrack([]);
+            document.getElementById("gantt").innerHTML = "";
+            setGanttStatus("Could not run simulation: " + (err.message || String(err)), "error");
+        });
+}
+
+function closeGantt() {
+    document.getElementById("ganttContainer").classList.remove("active");
+}
+
+function resetAll() {
+    processes = [];
+    queueEl.innerHTML = "";
+    clearInputWarning();
+    btInput.value = "";
+    memInput.value = "";
+    atInput.value = "";
+    document.getElementById("metrics").innerHTML = "";
+    document.getElementById("gantt").innerHTML = "";
+    document.getElementById("ganttTrack").innerHTML = "";
+    setGanttStatus("", "");
+    closeGantt();
+}
+</script>
+</body>
+</html>
