@@ -42,10 +42,10 @@ This helps improve overall efficiency and reflects more realistic scheduling beh
 │   ├── memory.py          # Memory management
 │   ├── metrics.py         # CPU utilization tracking
 │   └── process.py         # Process model
+│   └── system.py          # Adaptive scheduling system
 ├── frontend/
 │   └── index.html
 ├── requirements.txt  
-├── system.py              # Adaptive scheduling system
 ├── templates/
 │   └── index.html         # Frontend UI
 ├── vercel.json
